@@ -1,0 +1,771 @@
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously
+
+import 'package:flutter/material.dart';
+import 'package:myimmoappfahad/corps/object.dart';
+import 'package:myimmoappfahad/immocolors.dart';
+import 'package:myimmoappfahad/server/apiconnect.dart';
+import 'package:myimmoappfahad/tenant_details.screen.dart';
+import 'property_model.dart';
+import 'tenant_model.dart';
+import 'add_tenant_screen.dart';
+
+class PropertyDetailScreen extends StatefulWidget {
+  Objects property;
+
+   PropertyDetailScreen({
+    super.key,
+    required this.property,
+  });
+
+  @override
+  PropertyDetailScreenState createState() =>
+      PropertyDetailScreenState(property: property);
+}
+
+class PropertyDetailScreenState extends State<PropertyDetailScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  Objects property;
+  PropertyDetailScreenState({required this.property});
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: icolor.blue,
+        toolbarHeight: 150,
+        centerTitle: true,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: icolor.gray,
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        title: Text(
+          widget.,
+          style: TextStyle(fontSize: 19, color: icolor.gray),
+        ),
+        bottom: TabBar(
+          controller: _tabController,
+          labelColor: icolor.gray,
+          unselectedLabelColor: Colors.grey,
+          indicatorColor: icolor.teal,
+          tabs: [
+            Tab(text: 'Finanzen'),
+            Tab(text: 'Mieter'),
+            Tab(text: 'Details'),
+          ],
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildAnalyticsTab(),
+          _buildTenantsTab(),
+          _buildDetailsTab(),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+         
+        },
+        icon: Icon(
+          Icons.person_add,
+          color: icolor.gray,
+        ),
+        label: Text(
+          'Mieter hinzufügen',
+          style: TextStyle(color: icolor.gray),
+        ),
+        backgroundColor: icolor.teal,
+      ),
+    );
+  }
+
+  Widget _buildDetailsTab() {
+    final property = widget.property;
+
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: ListView(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 16),
+              const Text(
+                'Allgemeine Immobilienbezogene Informationen',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              _buildDetailItem(
+                  'Objekt',
+                  property.objectType.toString(),
+                  Icons.home,
+                  ServerHandler(Request: "changeobjectdetails", sendData: {
+                    'label': 'Name',
+                    'value': ''
+                  }).changeObjectdetails()),
+              _buildDetailItem(
+                  'Straße',
+                  property.street.toString(),
+                  Icons.location_on,
+                  ServerHandler(Request: "changeobjectdetails", sendData: {
+                    'label': 'Adresse',
+                    'value': ''
+                  }).changeObjectdetails()),
+              _buildDetailItem(
+                  'Stadt',
+                  property.city ?? "Nicht verfügbar",
+                  Icons.location_city,
+                  ServerHandler(
+                          Request: "changeobjectdetails",
+                          sendData: {'label': 'Stadt', 'value': property.city})
+                      .changeObjectdetails()),
+              _buildDetailItem(
+                  'Bundesland',
+                  "Nicht verfügbar",
+                  Icons.map,
+                  ServerHandler(Request: "changeobjectdetails", sendData: {
+                    'label': 'Bundesland',
+                    'value': "property.state"
+                  }).changeObjectdetails()),
+              _buildDetailItem(
+                  'Land',
+                  "Nicht verfügbar",
+                  Icons.flag,
+                  ServerHandler(Request: "changeobjectdetails", sendData: {
+                    'label': 'Land',
+                    'value': "property.country"
+                  }).changeObjectdetails()),
+              _buildDetailItem(
+                  'Postleitzahl',
+                  property.postalCode,
+                  Icons.markunread_mailbox,
+                  ServerHandler(Request: "changeobjectdetails", sendData: {
+                    'label': 'Postleitzahl',
+                    'value': property.postalCode
+                  }).changeObjectdetails()),
+              _buildDetailItem(
+                  'Zimmer',
+                  property.rooms.toString(),
+                  Icons.meeting_room,
+                  ServerHandler(Request: "changeobjectdetails", sendData: {
+                    'label': 'Zimmer',
+                    'value': property.rooms
+                  }).changeObjectdetails()),
+              _buildDetailItem(
+                  'Immobilientyp',
+                  property.type,
+                  Icons.apartment,
+                  ServerHandler(Request: "changeobjectdetails", sendData: {
+                    'label': 'Immobilientyp',
+                    'value': property.type
+                  }).changeObjectdetails()),
+              if (property.isMultiUnit) ...[
+                if (property.totalFloors != null)
+                  _buildDetailItem(
+                      'Anzahl der Stockwerke',
+                      property.totalFloors.toString(),
+                      Icons.stairs,
+                      ServerHandler(Request: "changeobjectdetails", sendData: {
+                        'label': 'AnzahlanStockwerken',
+                        'value': property.totalFloors
+                      }).changeObjectdetails()),
+                if (property.hasElevator != null)
+                  _buildDetailItem(
+                      'Aufzug',
+                      property.hasElevator! ? 'Ja' : 'Nein',
+                      Icons.elevator,
+                      ServerHandler(Request: "changeobjectdetails", sendData: {
+                        'label': 'Aufzug',
+                        'value': property.hasElevator
+                      }).changeObjectdetails()),
+              ],
+              if (property.builtYear != null)
+                _buildDetailItem(
+                    'Baujahr',
+                    property.builtYear.toString(),
+                    Icons.calendar_today,
+                    ServerHandler(Request: "changeobjectdetails", sendData: {
+                      'label': 'Baujahr',
+                      'value': property.builtYear
+                    }).changeObjectdetails()),
+              if (property.heatingType != null)
+                _buildDetailItem(
+                    'Heizungsart',
+                    property.heatingType!,
+                    Icons.thermostat,
+                    ServerHandler(Request: "changeobjectdetails", sendData: {
+                      'label': 'Heizungsart',
+                      'value': property.heatingType
+                    }).changeObjectdetails()),
+              if (property.energyRating != null)
+                _buildDetailItem(
+                    'Energieeffizienzklasse',
+                    property.energyRating!,
+                    Icons.bolt,
+                    ServerHandler(Request: "changeobjectdetails", sendData: {
+                      'label': 'Energieeffizienzklasse',
+                      'value': property.energyRating
+                    }).changeObjectdetails()),
+              const SizedBox(height: 16),
+              const Text(
+                'Ausstattung',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  if (property.hasGarden)
+                    _buildAmenityChip('Garten', Icons.park),
+                  if (property.hasParking)
+                    _buildAmenityChip('Parkplatz', Icons.local_parking),
+                ],
+              ),
+              if (property.notes != null && property.notes!.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                const Text(
+                  'Hinweise',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                Text(property.notes!),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTenantsTab() {
+    final property = widget.property;
+    return propertyTenants.isEmpty
+        ? Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.people_outline,
+                  size: 64,
+                  color: Colors.black,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'Noch keine Mieter eingetragen.',
+                  style: TextStyle(
+                    fontSize: 18,
+                  ),
+                ),
+              ],
+            ),
+          )
+        : Container(
+            child: property.isSingleHouse
+                ? Builder(
+                    builder: (context) {
+                      Tenant tenant = propertyTenants[0];
+                      return Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: ListView(
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'Allgemeine Informationen',
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 8),
+                                _buildDetailItem(
+                                    'Vollständiger Name',
+                                    tenant.name ?? 'Nicht verfügbar',
+                                    Icons.person,
+                                    ServerHandler(
+                                        Request: 'changetenantdetails',
+                                        sendData: {
+                                          'label': "Name",
+                                          "value": tenant.name
+                                        }).changeTenantdetails()),
+                                _buildDetailItem(
+                                    'Email',
+                                    tenant.email ?? 'Nicht verfügbar',
+                                    Icons.mail,
+                                    ServerHandler(
+                                        Request: 'changetenantdetails',
+                                        sendData: {
+                                          'label': "Email",
+                                          "value": tenant.email
+                                        }).changeTenantdetails()),
+                                _buildDetailItem(
+                                    'Telefonnummer',
+                                    tenant.contact ?? 'Nicht verfügbar',
+                                    Icons.call,
+                                    ServerHandler(
+                                        Request: 'changetenantdetails',
+                                        sendData: {
+                                          'label': "phone",
+                                          "value": tenant.contact
+                                        }).changeTenantdetails()),
+                                _buildDetailItem(
+                                    'Geburtstag',
+                                    tenant.birthdate?.toString() ??
+                                        'Nicht verfügbar',
+                                    Icons.celebration,
+                                    ServerHandler(
+                                        Request: 'changetenantdetails',
+                                        sendData: {
+                                          'label': "birthday",
+                                          "value": tenant.birthdate
+                                        }).changeTenantdetails()),
+                                _buildDetailItem(
+                                    'Passnummer',
+                                    tenant.idNumber?.toString() ??
+                                        'Nicht verfügbar',
+                                    Icons.perm_identity,
+                                    ServerHandler(
+                                        Request: 'changetenantdetails',
+                                        sendData: {
+                                          'label': "passport",
+                                          "value": tenant.idNumber
+                                        }).changeTenantdetails()),
+                                const SizedBox(height: 14),
+                                const Text(
+                                  'Vertragsinformationen',
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 8),
+                                _buildDetailItem(
+                                    'Vertragsstart',
+                                    tenant.contractStart?.toString() ??
+                                        'Nicht verfügbar',
+                                    Icons.agriculture,
+                                    ServerHandler(
+                                        Request: 'changetenantdetails',
+                                        sendData: {
+                                          'label': "contractstart",
+                                          "value": tenant.contractStart
+                                        }).changeTenantdetails()),
+                                _buildDetailItem(
+                                    'Vertragsende',
+                                    tenant.contractEnd?.toString() ??
+                                        'Nicht verfügbar',
+                                    Icons.perm_identity,
+                                    ServerHandler(
+                                        Request: 'changetenantdetails',
+                                        sendData: {
+                                          'label': "contractend",
+                                          "value": tenant.contractEnd
+                                        }).changeTenantdetails()),
+                                _buildDetailItem(
+                                    'Kaltmiete in Euro',
+                                    tenant.rentAmount?.toString() ??
+                                        'Nicht verfügbar',
+                                    Icons.monetization_on,
+                                    ServerHandler(
+                                        Request: 'changetenantdetails',
+                                        sendData: {
+                                          'label': "rent",
+                                          "value": tenant.rentAmount
+                                        }).changeTenantdetails()),
+                                _buildDetailItem(
+                                    'Warmmiete in Euro',
+                                    tenant.warmRentAmount?.toString() ??
+                                        'Nicht verfügbar',
+                                    Icons.monetization_on_outlined,
+                                    ServerHandler(
+                                        Request: 'changetenantdetails',
+                                        sendData: {
+                                          'label': "warmrent",
+                                          "value": tenant.warmRentAmount
+                                        }).changeTenantdetails()),
+                                _buildDetailItem(
+                                    'Kaution in Euro',
+                                    tenant.depositAmount?.toString() ??
+                                        'Nicht verfügbar',
+                                    Icons.money,
+                                    ServerHandler(
+                                        Request: 'changetenantdetails',
+                                        sendData: {
+                                          'label': "deposit",
+                                          "value": tenant.depositAmount
+                                        }).changeTenantdetails()),
+                                const SizedBox(height: 14),
+                                const Text(
+                                  'Mietinformationen',
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                _buildDetailItem(
+                                    'Fälligkeit Tag der Miete im Monat',
+                                    tenant.rentDueDay?.toString() ??
+                                        'Nicht verfügbar',
+                                    Icons.calendar_month,
+                                    ServerHandler(
+                                        Request: 'changetenantdetails',
+                                        sendData: {
+                                          'label': "rentdueday",
+                                          "value": tenant.rentDueDay
+                                        }).changeTenantdetails()),
+                                _buildDetailItem(
+                                    'Datum der letzten Mieterhöhung',
+                                    tenant.lastRentIncreaseDate?.toString() ??
+                                        'Nicht verfügbar',
+                                    Icons.calendar_today,
+                                    ServerHandler(
+                                        Request: 'changetenantdetails',
+                                        sendData: {
+                                          'label': "lastIncrease",
+                                          "value": tenant.lastRentIncreaseDate
+                                        }).changeTenantdetails()),
+                              ],
+                            )
+                          ],
+                        ),
+                      );
+                    },
+                  )
+                : ListView.builder(
+                    padding: EdgeInsets.all(16),
+                    itemCount: propertyTenants.length,
+                    itemBuilder: (context, index) {
+                      final tenant = propertyTenants[index];
+                      return Card(
+                        color: Colors.white,
+                        margin: EdgeInsets.only(bottom: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    TenantDetailsScreen(tenant: tenant),
+                              ),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(12),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 24,
+                                      backgroundColor:
+                                          icolor.blue.withOpacity(0.1),
+                                      child: Text(
+                                        (tenant.name?.isNotEmpty ?? false)
+                                            ? tenant.name![0].toUpperCase()
+                                            : '?',
+                                        style: TextStyle(
+                                          color: icolor.teal,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 20,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            tenant.name ?? 'Unbekannter Mieter',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          SizedBox(height: 4),
+                                          Text(
+                                            tenant.contact ??
+                                                'Keine Kontaktdaten',
+                                            style: TextStyle(
+                                              color: Colors.grey[600],
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (tenant.rentAmount != null)
+                                      Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 6,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.green.withOpacity(0.1),
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                        child: Text(
+                                          '€${tenant.rentAmount}/Monat',
+                                          style: TextStyle(
+                                            color: Colors.green,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 5),
+                                _buildPropertyFeature(
+                                    Icons.mail, tenant.email!),
+                                const SizedBox(height: 5),
+                                Wrap(
+                                  direction: Axis.horizontal,
+
+                                  spacing: 2.0, // horizontaler Abstand
+                                  runSpacing: 2.0,
+                                  children: [
+                                    if (tenant.level != null) ...[
+                                      const SizedBox(width: 8),
+                                      _buildPropertyFeature(Icons.apartment,
+                                          "Etage ${tenant.level.toString()}")
+                                    ],
+                                    if (tenant.unit != null) ...[
+                                      const SizedBox(width: 8),
+                                      _buildPropertyFeature(
+                                          Icons.door_front_door,
+                                          "Zimmer ${tenant.unit.toString()}")
+                                    ],
+                                    if (tenant.hasPets!)
+                                      _buildPropertyFeature(
+                                          Icons.pets, "Haustiere"),
+                                    if (tenant.isMarried!)
+                                      _buildPropertyFeature(
+                                          Icons.favorite, "Ist verheiratet")
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          );
+  }
+
+  Widget _buildAnalyticsTab() {
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Financial Overview',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 16),
+          _buildAnalyticCard(
+            'Monthly Revenue',
+            '\$${widget.property.rent * propertyTenants.length}',
+            'From ${propertyTenants.length} occupied units',
+            Icons.trending_up,
+            Colors.green,
+          ),
+          SizedBox(height: 16),
+          _buildAnalyticCard(
+            'Vacancy Loss',
+            '\$${widget.property.rent * (widget.property.unitCount - propertyTenants.length)}',
+            'From ${widget.property.unitCount - propertyTenants.length} vacant units',
+            Icons.trending_down,
+            Colors.red,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailItem(String label, String value,
+      [IconData? icon, Future? onEdit]) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      padding: const EdgeInsets.all(3),
+      child: Row(
+        children: [
+          Container(
+            width: 4,
+            height: 60,
+            decoration: BoxDecoration(
+              color: Colors.blue,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(12),
+                bottomLeft: Radius.circular(12),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          if (icon != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Icon(icon, color: Colors.blueGrey),
+            ),
+          Expanded(
+            // Damit Text nicht mit Edit-Icon kollidiert
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Color(0xFF374151),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (onEdit != null)
+            IconButton(
+              onPressed: () async {
+                print('hey');
+                onEdit;
+              },
+              icon: Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 20,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAmenityChip(String label, IconData icon) {
+    return Chip(
+      avatar: Icon(
+        icon,
+        size: 16,
+        color: icolor.blue,
+      ),
+      label: Text(label),
+      backgroundColor: Colors.grey[100],
+    );
+  }
+
+  Widget _buildAnalyticCard(
+    String title,
+    String value,
+    String subtitle,
+    IconData icon,
+    Color color,
+  ) {
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: color),
+                SizedBox(width: 8),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 8),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoChip(IconData icon, String label) {
+    return Chip(
+      avatar: Icon(icon, size: 16, color: Colors.blue),
+      label: Text(label),
+      backgroundColor: Colors.grey[100],
+    );
+  }
+
+  Widget _buildPropertyFeature(IconData icon, String label) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: Colors.grey[600]),
+        SizedBox(width: 4),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontSize: 16,
+          ),
+        ),
+      ],
+    );
+  }
+}
